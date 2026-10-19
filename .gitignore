@@ -1,0 +1,13 @@
+# Entorno virtual
+venv/
+.venv/
+
+# Variables de entorno (contienen contraseñas)
+.env
+
+# Archivos de Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
