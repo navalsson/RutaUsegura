@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RutaUsegura - Botón SOS</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    h1 { margin-bottom: 4px; }
+    p { color: #555; margin-top: 0; }
+    #btn-sos {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      border: none;
+      background: #d62828;
+      color: #fff;
+      font-size: 48px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 24px 0;
+    }
+    #btn-sos:disabled { background: #999; cursor: not-allowed; }
+    #mensaje { font-size: 18px; min-height: 28px; padding: 0 16px; }
+    .ok { color: #1b7f3b; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>RutaUsegura</h1>
+  <p>Presiona el botón si estás en peligro</p>
+
+  <button id="btn-sos">SOS</button>
+  <div id="mensaje"></div>
+
+  <script>
+    const boton = document.getElementById("btn-sos");
+    const mensaje = document.getElementById("mensaje");
+
+    function mostrar(texto, clase) {
+      mensaje.textContent = texto;
+      mensaje.className = clase;
+    }
+
+    async function enviarAlerta(latitud, longitud) {
+      try {
+        const respuesta = await fetch("/sos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latitud, longitud })
+        });
+        const datos = await respuesta.json();
+        if (datos.ok) {
+          mostrar("Alerta enviada. Identificador: " + datos.id_alerta, "ok");
+        } else {
+          mostrar(datos.mensaje, "error");
+        }
+      } catch (e) {
+        mostrar("La operación no pudo completarse. La alerta no fue enviada.", "error");
+      }
+      boton.disabled = false;
+    }
+
+    boton.addEventListener("click", () => {
+      boton.disabled = true;
+      mostrar("Obteniendo ubicación...", "");
+
+      if (!navigator.geolocation) {
+        mostrar("Tu navegador no permite obtener la ubicación.", "error");
+        boton.disabled = false;
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => enviarAlerta(pos.coords.latitude, pos.coords.longitude),
+        () => {
+          mostrar("No se pudo obtener la ubicación. Activa el permiso e intenta de nuevo.", "error");
+          boton.disabled = false;
+        }
+      );
+    });
+  </script>
+</body>
+</html>

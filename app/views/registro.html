@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RutaUsegura - Registro</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #e9ecf1; margin: 0;
+           display: flex; justify-content: center; }
+    .app { width: 100%; max-width: 390px; min-height: 100vh; background: #fff; }
+    header { background: #1d3557; color: #fff; padding: 28px 20px 22px; }
+    header h1 { margin: 0; font-size: 22px; }
+    header p { margin: 6px 0 0; font-size: 14px; opacity: .85; }
+    form { padding: 8px 20px 28px; }
+    h2 { font-size: 15px; color: #1d3557; margin: 22px 0 6px; }
+    label { display: block; font-size: 13px; color: #444; margin-top: 12px; }
+    input { width: 100%; padding: 12px; margin-top: 4px; font-size: 15px;
+            border: 1px solid #c4c9d4; border-radius: 8px; }
+    button { width: 100%; margin-top: 26px; padding: 14px; font-size: 16px;
+             font-weight: bold; color: #fff; background: #d62828;
+             border: none; border-radius: 10px; cursor: pointer; }
+    .error { background: #fde8e8; color: #b00020; padding: 10px 12px;
+             border-radius: 8px; margin-top: 16px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>RutaUsegura</h1>
+      <p>Regístrate una vez y ten tu botón de emergencia siempre listo.</p>
+    </header>
+    <form method="post" action="/registro">
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+      <h2>Tus datos</h2>
+      <label>Nombre completo
+        <input name="nombre" value="{{ datos.get('nombre', '') }}"></label>
+      <label>Código universitario
+        <input name="codigo" value="{{ datos.get('codigo', '') }}"></label>
+      <label>Tu teléfono
+        <input name="telefono" value="{{ datos.get('telefono', '') }}"></label>
+
+      <h2>Contacto de confianza</h2>
+      <label>Nombre del contacto
+        <input name="c_nombre" value="{{ datos.get('c_nombre', '') }}"></label>
+      <label>Teléfono del contacto
+        <input name="c_telefono" value="{{ datos.get('c_telefono', '') }}"></label>
+      <label>Parentesco (opcional)
+        <input name="parentesco" value="{{ datos.get('parentesco', '') }}"></label>
+
+      <button type="submit">Registrarme</button>
+    </form>
+  </div>
+</body>
+</html>
