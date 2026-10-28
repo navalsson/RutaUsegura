@@ -17,7 +17,21 @@
       text-align: center;
     }
     h1 { margin-bottom: 4px; }
-    p { color: #555; margin-top: 0; }
+    p { color: #555; margin-top: 0; padding: 0 16px; }
+
+    /* Anillo que se llena mientras se mantiene presionado */
+    .anillo {
+      --p: 0;
+      width: 244px;
+      height: 244px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: conic-gradient(#1b7f3b calc(var(--p) * 1%), #d9d9d9 0);
+      margin: 24px 0;
+    }
+
     #btn-sos {
       width: 220px;
       height: 220px;
@@ -28,28 +42,47 @@
       font-size: 48px;
       font-weight: bold;
       cursor: pointer;
-      margin: 24px 0;
+      margin: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
     }
+    #btn-sos:focus-visible { outline: 4px solid #1d3557; outline-offset: 4px; }
     #btn-sos:disabled { background: #999; cursor: not-allowed; }
+
     #mensaje { font-size: 18px; min-height: 28px; padding: 0 16px; }
     .ok { color: #1b7f3b; }
     .error { color: #b00020; }
+    a { color: #1d3557; font-size: 14px; }
   </style>
 </head>
 <body>
   <h1>RutaUsegura</h1>
-  <p>Presiona el botón si estás en peligro</p>
+  <p>Mantén presionado el botón 2 segundos si estás en peligro</p>
 
-  <button id="btn-sos">SOS</button>
-  <div id="mensaje"></div>
+  <div class="anillo" id="anillo">
+    <button id="btn-sos" aria-describedby="mensaje">SOS</button>
+  </div>
+  <div id="mensaje" role="status" aria-live="polite"></div>
+  <p><a href="/salir">Cerrar sesión / registrar otra persona</a></p>
 
   <script>
+    const DURACION_MS = 2000;
     const boton = document.getElementById("btn-sos");
+    const anillo = document.getElementById("anillo");
     const mensaje = document.getElementById("mensaje");
+
+    let inicio = null;
+    let cuadro = null;
 
     function mostrar(texto, clase) {
       mensaje.textContent = texto;
       mensaje.className = clase;
+    }
+
+    function pintar(porcentaje) {
+      anillo.style.setProperty("--p", porcentaje);
     }
 
     async function enviarAlerta(latitud, longitud) {
@@ -69,15 +102,17 @@
         mostrar("La operación no pudo completarse. La alerta no fue enviada.", "error");
       }
       boton.disabled = false;
+      pintar(0);
     }
 
-    boton.addEventListener("click", () => {
+    function disparar() {
       boton.disabled = true;
       mostrar("Obteniendo ubicación...", "");
 
       if (!navigator.geolocation) {
         mostrar("Tu navegador no permite obtener la ubicación.", "error");
         boton.disabled = false;
+        pintar(0);
         return;
       }
 
@@ -86,9 +121,58 @@
         () => {
           mostrar("No se pudo obtener la ubicación. Activa el permiso e intenta de nuevo.", "error");
           boton.disabled = false;
+          pintar(0);
         }
       );
+    }
+
+    function paso(ahora) {
+      if (inicio === null) return;
+      const progreso = Math.min(Math.max((ahora - inicio) / DURACION_MS, 0), 1);
+      pintar(progreso * 100);
+      if (progreso >= 1) {
+        inicio = null;
+        cuadro = null;
+        disparar();
+      } else {
+        cuadro = requestAnimationFrame(paso);
+      }
+    }
+
+    function comenzar() {
+      if (boton.disabled || inicio !== null) return;
+      inicio = performance.now();
+      mostrar("Sigue presionando...", "");
+      cuadro = requestAnimationFrame(paso);
+    }
+
+    function cancelar() {
+      if (inicio === null) return;
+      cancelAnimationFrame(cuadro);
+      inicio = null;
+      cuadro = null;
+      pintar(0);
+      mostrar("Mantén presionado 2 segundos para enviar la alerta.", "");
+    }
+
+    // Mouse y pantalla táctil
+    boton.addEventListener("pointerdown", comenzar);
+    boton.addEventListener("pointerup", cancelar);
+    boton.addEventListener("pointerleave", cancelar);
+    boton.addEventListener("pointercancel", cancelar);
+    boton.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Teclado (Espacio o Enter), para accesibilidad
+    boton.addEventListener("keydown", (e) => {
+      if ((e.key === " " || e.key === "Enter") && !e.repeat) {
+        e.preventDefault();
+        comenzar();
+      }
     });
+    boton.addEventListener("keyup", (e) => {
+      if (e.key === " " || e.key === "Enter") cancelar();
+    });
+    boton.addEventListener("blur", cancelar);
   </script>
 </body>
 </html>
