@@ -65,6 +65,10 @@ def enviar_sos():
     except (TypeError, ValueError):
         return jsonify({"ok": False, "mensaje": "No se pudo obtener la ubicación."}), 400
 
+    if not (-90 <= latitud <= 90 and -180 <= longitud <= 180):
+        return jsonify({"ok": False,
+                        "mensaje": "La ubicación recibida no es válida."}), 400
+
     try:
         datos_contacto = contacto.obtener_por_estudiante(id_estudiante)
         if datos_contacto is None:
@@ -83,3 +87,9 @@ def enviar_sos():
         }), 500
 
     return jsonify({"ok": True, "mensaje": "Alerta enviada", "id_alerta": id_alerta})
+
+
+@alerta_bp.route("/salir")
+def salir():
+    session.clear()
+    return redirect(url_for("alerta.registro"))
