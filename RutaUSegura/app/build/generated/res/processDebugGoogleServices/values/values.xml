@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">72276935761</string>
+    <string name="google_api_key" translatable="false">AIzaSyB0h3b5QhDLm4TBltWXpwRnUoPWxValFVE</string>
+    <string name="google_app_id" translatable="false">1:72276935761:android:41a1f32da6261e912c2470</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyB0h3b5QhDLm4TBltWXpwRnUoPWxValFVE</string>
+    <string name="google_storage_bucket" translatable="false">rutausegura.firebasestorage.app</string>
+    <string name="project_id" translatable="false">rutausegura</string>
+</resources>
